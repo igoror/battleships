@@ -5,8 +5,8 @@ using BattleShips.Core.Players;
 using BattleShips.Core.Ships;
 using BattleShips.Core.UI;
 
-var alivePlayer = new HumanBeingPlayer();
-var randomPlayer = new AutonomousRandomPlayer();
+var alivePlayer = new HumanBeingPlayer(isActiveBomber:true, isActiveShipPlacer:false);
+var randomPlayer = new AutonomousRandomPlayer(isActiveBomber:false, isActiveShipPlacer:true);
 // List of ships available during the gameplay1
 var availableShips = new List<IShip>
 {
@@ -16,8 +16,10 @@ const int rows = 10;
 const int columns = 10;
 
 // With suppressLiveShipParts == false we can show full board
-var firstPlayerSideViewModel = new PlaygroundSideSideViewModel(rows, columns, isHumanBeing:true, suppressLiveShipsParts: false);
-var secondPlayerSideViewModel = new PlaygroundSideSideViewModel(rows, columns, isHumanBeing:false, suppressLiveShipsParts: true);
+var firstPlayerSideViewModel = new PlaygroundSideSideViewModel(rows, columns, isHumanBeing:true, 
+    suppressLiveShipsParts: false, isVisible:false);
+var secondPlayerSideViewModel = new PlaygroundSideSideViewModel(rows, columns, isHumanBeing:false, 
+    suppressLiveShipsParts: true);
 var consolePlaygroundVisualizer = new ConsolePlaygroundVisualizer(firstPlayerSideViewModel, secondPlayerSideViewModel);
 
 var playgroundShipFactory = new PlaygroundShipFactory();

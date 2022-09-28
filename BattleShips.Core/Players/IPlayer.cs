@@ -14,4 +14,6 @@ public interface IPlayer
     (int Row, int Column) NextMove();
     // Informational method. Result of last move provided as argument.
     void StoreLastMoveResult(ActionResult result);
+    bool IsActiveBomber { get; }
+    bool IsActiveShipPlacer { get; }
 }

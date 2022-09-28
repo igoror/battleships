@@ -67,6 +67,10 @@ public class Playground : IPlayground
         var player = playerType == PlayerType.First ? _player1 : _player2;
         var playgroundSide = playerType == PlayerType.First ? _player1Side : _player2Side; 
         player.InitializePlayerContext(_rows, _columns, _availableShips);
+
+        if (!player.IsActiveShipPlacer)
+            return;
+        
         foreach (var ship in _availableShips)
         {
             IPlaygroundShip? playgroundShip = null;
@@ -98,25 +102,11 @@ public class Playground : IPlayground
         
         var oppositePlayerBoard = _player2Side;
         var currentPlayer = _player1;
+        var oppositePlayer = _player2;
         var currentPlayerType = PlayerType.First;
         while (true)
         {
-            var movedSuccessfully = false;
-            for (var retryCount = 0; retryCount < RetryCount; ++retryCount)
-            {
-                _gameObserver.OnPlayerMove(currentPlayerType);
-                var nextMove =  currentPlayer.NextMove();
-                if (nextMove == Constants.FailureBombingPosition 
-                    || !nextMove.Row.InRange(0, _rows - 1) || !nextMove.Column.InRange(0, _columns - 1) )
-                    continue;
-                
-                var moveResult = oppositePlayerBoard.Bomb(nextMove.Row, nextMove.Column);
-                currentPlayer.StoreLastMoveResult(moveResult);
-                _gameObserver.OnPlayerMoved(currentPlayerType, nextMove.Row, nextMove.Column, moveResult);
-                movedSuccessfully = true;
-                break;
-            }
-
+            var movedSuccessfully = PlayerMove(currentPlayerType, currentPlayer, oppositePlayerBoard);
             if (!movedSuccessfully)
             {
                 var errorMessage = $"Player:{currentPlayerType} was unable to place bomb for {RetryCount} times in a row.";
@@ -124,17 +114,46 @@ public class Playground : IPlayground
                 throw new InvalidOperationException(errorMessage);
             }
 
-            if (oppositePlayerBoard.HasAliveShips())
-            {
-                currentPlayer = currentPlayerType == PlayerType.First ? _player2 : _player1;
-                oppositePlayerBoard = currentPlayerType == PlayerType.First ? _player1Side : _player2Side;
-                currentPlayerType = currentPlayerType.Other();
-            }
-            else
+
+            if (GameFinished(oppositePlayer, oppositePlayerBoard))
                 break;
+            
+            currentPlayer = currentPlayerType == PlayerType.First ? _player2 : _player1;
+            oppositePlayer = currentPlayerType == PlayerType.First ? _player1 : _player2;
+            oppositePlayerBoard = currentPlayerType == PlayerType.First ? _player1Side : _player2Side;
+            currentPlayerType = currentPlayerType.Other();
         }
         
         _gameObserver.OnGameEnd(currentPlayerType);
         return currentPlayerType;
+    }
+
+    private bool GameFinished(IPlayer oppositePLayer, IPlaygroundSide oppositePlaygroundSide)
+    {
+        return !oppositePlaygroundSide.HasAliveShips() && oppositePLayer.IsActiveShipPlacer;
+    }
+
+    private bool PlayerMove(PlayerType playerType, IPlayer player, IPlaygroundSide oppositePlayerBoard)
+    {
+        if (!player.IsActiveBomber)
+            return true;
+        
+        var movedSuccessfully = false;
+        for (var retryCount = 0; retryCount < RetryCount; ++retryCount)
+        {
+            _gameObserver.OnPlayerMove(playerType);
+            var nextMove =  player.NextMove();
+            if (nextMove == Constants.FailureBombingPosition 
+                || !nextMove.Row.InRange(0, _rows - 1) || !nextMove.Column.InRange(0, _columns - 1) )
+                continue;
+                
+            var moveResult = oppositePlayerBoard.Bomb(nextMove.Row, nextMove.Column);
+            player.StoreLastMoveResult(moveResult);
+            _gameObserver.OnPlayerMoved(playerType, nextMove.Row, nextMove.Column, moveResult);
+            movedSuccessfully = true;
+            break;
+        }
+
+        return movedSuccessfully;
     }
 }

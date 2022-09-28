@@ -5,11 +5,19 @@ namespace BattleShips.Core.Players;
 
 public class AutonomousRandomPlayer : IPlayer
 {
+    public bool IsActiveBomber { get; }
+    public bool IsActiveShipPlacer { get; }
     private readonly HashSet<(int Row, int Column)> _availableMoves = new();
     private readonly HashSet<int> _availableRows = new();
     private readonly Random _random = Random.Shared;
     private int _rows;
     private int _columns;
+    
+    public AutonomousRandomPlayer(bool isActiveBomber = true, bool isActiveShipPlacer = true)
+    {
+        IsActiveBomber = isActiveBomber;
+        IsActiveShipPlacer = isActiveShipPlacer;
+    }
 
     public void InitializePlayerContext(int rows, int columns, IEnumerable<IShip> availableShips)
     {

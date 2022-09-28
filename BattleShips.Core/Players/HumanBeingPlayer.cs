@@ -5,6 +5,15 @@ namespace BattleShips.Core.Players;
 
 public class HumanBeingPlayer : IPlayer
 {
+    public bool IsActiveBomber { get; }
+    public bool IsActiveShipPlacer { get; }
+
+    public HumanBeingPlayer(bool isActiveBomber = true, bool isActiveShipPlacer = true)
+    {
+        IsActiveBomber = isActiveBomber;
+        IsActiveShipPlacer = isActiveShipPlacer;
+    }
+    
     public void InitializePlayerContext(int rows, int columns, IEnumerable<IShip> availableShips)
     {
         // Nothing to do for real player

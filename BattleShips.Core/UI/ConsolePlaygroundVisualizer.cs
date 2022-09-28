@@ -67,6 +67,9 @@ public class ConsolePlaygroundVisualizer : IGameObserver
     private void PrintPlayer(PlayerType playerType)
     {
         var viewModel = GetViewModel(playerType);
+        if (!viewModel.IsVisible)
+            return;
+        
         Console.WriteLine($"Player: {playerType}");
         for (var row = 0; row < viewModel.Board.GetLength(0); ++row)
         {
